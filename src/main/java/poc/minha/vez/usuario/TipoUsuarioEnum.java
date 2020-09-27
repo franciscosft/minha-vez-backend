@@ -1,4 +1,4 @@
-package poc.minha.vez.domain;
+package poc.minha.vez.usuario;
 
 import java.io.Serializable;
 
