@@ -94,5 +94,14 @@ public class GereciadorSenhaTest {
 	}
 	
 	
+	@Test
+	public void testGerenciarSenhas() {
+		/*
+		 * TODO ao puxar uma senha mudar a situação de outra
+		 */
+		Assert.assertTrue(true);
+	}
+	
+	
 	
 }

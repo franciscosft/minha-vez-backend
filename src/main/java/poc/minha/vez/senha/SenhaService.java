@@ -69,7 +69,9 @@ public class SenhaService {
 		Usuario usuario = recuperarUsuario(idUsuario);
 		if(usuario.getTipoUsuario().equals(TipoUsuarioEnum.GERENTE)){
 			contadorService.zerarContador();
-			senhaDAO.findBySituacaoSenha(SituacaoSenhaEnum.PENDENTE);
+			List<Senha> senhasPendentes = senhaDAO.findBySituacaoSenha(SituacaoSenhaEnum.PENDENTE);
+			senhasPendentes.forEach(senha -> senha.setSituacaoSenha(SituacaoSenhaEnum.CONCLUIDO));
+			senhaDAO.saveAll(senhasPendentes);
 		} else {
 			throw new OperacaoNegadaException();
 		}
