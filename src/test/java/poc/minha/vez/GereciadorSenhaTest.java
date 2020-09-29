@@ -2,6 +2,8 @@ package poc.minha.vez;
 
 import static org.junit.Assert.assertEquals;
 
+import java.util.List;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -9,8 +11,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import poc.minha.vez.senha.Senha;
 import poc.minha.vez.senha.SenhaDTO;
 import poc.minha.vez.senha.SenhaService;
+import poc.minha.vez.senha.SituacaoSenhaEnum;
+import poc.minha.vez.senha.exceptions.OperacaoNegadaException;
 import poc.minha.vez.usuario.UsuarioDTO;
 import poc.minha.vez.usuario.UsuarioService;
 
@@ -59,6 +64,32 @@ public class GereciadorSenhaTest {
 		SenhaDTO n0003 = senhaService.cadastrarSenha(true, id1);
 		Assert.assertNotNull(n0003.getId());
 		Assert.assertEquals("P0003", n0003.getNumero());
+	}
+	
+	
+	@Test
+	public void testZerarSenha() throws OperacaoNegadaException {
+		UsuarioDTO gerente = usuarioService.cadastrarGerente();
+		SenhaDTO senha = senhaService.cadastrarSenha(false, gerente.getId());
+		Assert.assertEquals("N0001", senha.getNumero());
+		senhaService.zerarContador(gerente.getId());
+		senha = senhaService.cadastrarSenha(false, gerente.getId());
+		Assert.assertEquals("N0001", senha.getNumero());
+	}
+	
+	@Test(expected = OperacaoNegadaException.class)
+	public void testOperacaoNegada() throws OperacaoNegadaException {
+		UsuarioDTO cadastrarCliente = usuarioService.cadastrarCliente();
+		senhaService.zerarContador(cadastrarCliente.getId());
+	}
+	
+	@Test
+	public void testBuscarSenhaPendentes() throws OperacaoNegadaException {
+		UsuarioDTO cliente = usuarioService.cadastrarCliente();
+		Integer idCliente = cliente.getId();
+		senhaService.cadastrarSenha(false, idCliente);
+		List<Senha> buscarSenhasPorSituacao = senhaService.buscarSenhasPorSituacao(SituacaoSenhaEnum.PENDENTE);
+		Assert.assertTrue(!buscarSenhasPorSituacao.isEmpty());
 	}
 	
 	

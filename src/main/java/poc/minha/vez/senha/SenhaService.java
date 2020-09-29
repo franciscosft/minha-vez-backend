@@ -1,11 +1,15 @@
 package poc.minha.vez.senha;
 
+import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import poc.minha.vez.contador.ContadorService;
+import poc.minha.vez.senha.exceptions.OperacaoNegadaException;
+import poc.minha.vez.usuario.TipoUsuarioEnum;
 import poc.minha.vez.usuario.Usuario;
 import poc.minha.vez.usuario.UsuarioDTO;
 import poc.minha.vez.usuario.UsuarioService;
@@ -24,9 +28,8 @@ public class SenhaService {
 	@Autowired
 	private SenhaDAO senhaDAO;
 	
-	public SenhaDTO cadastrarSenha(boolean isPreferencial, int clientId) {
-		UsuarioDTO dto = usuarioService.getUsuario(clientId);
-		Usuario usuario = usuarioService.toEntity(dto);
+	public SenhaDTO cadastrarSenha(boolean isPreferencial, int idUsuario) {
+		Usuario usuario = recuperarUsuario(idUsuario);
 		
 		Senha senha = new Senha();
 		senha.setUsuario(usuario);
@@ -38,6 +41,12 @@ public class SenhaService {
 		
 		return toDTO(senha);
 		
+	}
+
+	private Usuario recuperarUsuario(int clientId) {
+		UsuarioDTO dto = usuarioService.getUsuario(clientId);
+		Usuario usuario = usuarioService.toEntity(dto);
+		return usuario;
 	}
 
 	private SenhaDTO toDTO(Senha senha) {
@@ -54,6 +63,20 @@ public class SenhaService {
 		int numero = contadorService.getNumero();
 		String format = isPreferencial ? "P%04d" : "N%04d"; 
 		return String.format(format, numero);
+	}
+
+	public void zerarContador(int idUsuario) throws OperacaoNegadaException {
+		Usuario usuario = recuperarUsuario(idUsuario);
+		if(usuario.getTipoUsuario().equals(TipoUsuarioEnum.GERENTE)){
+			contadorService.zerarContador();
+			senhaDAO.findBySituacaoSenha(SituacaoSenhaEnum.PENDENTE);
+		} else {
+			throw new OperacaoNegadaException();
+		}
+	}
+
+	public List<Senha> buscarSenhasPorSituacao(SituacaoSenhaEnum situacao) {
+		return senhaDAO.findBySituacaoSenha(situacao);
 	}
 
 }

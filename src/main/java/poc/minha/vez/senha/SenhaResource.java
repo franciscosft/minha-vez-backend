@@ -5,12 +5,15 @@ import java.net.URI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+
+import poc.minha.vez.senha.exceptions.OperacaoNegadaException;
 
 
 @RestController
@@ -22,7 +25,7 @@ public class SenhaResource {
 	private SenhaService senhaService;
 	
 	
-	@RequestMapping(value="/normal", method = RequestMethod.POST)
+	@RequestMapping(value="normal", method = RequestMethod.POST)
 	public ResponseEntity<SenhaDTO> cadastrarSenhaNormal(@RequestParam(required = true) int idCliente){
 		SenhaDTO cadastrarSenha = senhaService.cadastrarSenha(false, idCliente);
 		URI location = ServletUriComponentsBuilder.fromCurrentContextPath().path("senhas/{numero}").buildAndExpand(cadastrarSenha.getNumero()).toUri();
@@ -37,9 +40,15 @@ public class SenhaResource {
 	}
 	
 	
-	@RequestMapping(method = RequestMethod.GET)
-	public ResponseEntity<Void> buscarSenhas(){
-		return ResponseEntity.noContent().build();
+	@RequestMapping(value="zerar", method = RequestMethod.PUT)
+	public ResponseEntity<?> zerarSenhas(@RequestParam(required = true) int idCliente){
+		try {
+			senhaService.zerarContador(idCliente);
+			return ResponseEntity.noContent().build();
+		} catch (OperacaoNegadaException e) {
+			log.error(e.getMessage());
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
+		}
 	}
 
 }

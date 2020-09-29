@@ -5,6 +5,8 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import poc.minha.vez.contador.exceptions.ContadorNaoInicializadoException;
+
 @Service
 public class ContadorService {
 
@@ -24,6 +26,20 @@ public class ContadorService {
 		}
 		return contador.getNumero();
 	}
+
+	public void zerarContador() {
+		Optional<Contador> findById = dao.findById(1);
+		if(findById.isPresent()) {
+			Contador contador = findById.get();
+			contador.setNumero(0);
+			dao.save(contador);
+		}
+	}
+	
+	public Contador verificarContador() {
+		return dao.findById(1).orElseThrow(() -> new ContadorNaoInicializadoException());
+	}
+
 
 }
 
