@@ -70,6 +70,7 @@ public class GereciadorSenhaTest {
 	@Test
 	public void testZerarSenha() throws OperacaoNegadaException {
 		UsuarioDTO gerente = usuarioService.cadastrarGerente();
+		senhaService.zerarContador(gerente.getId());
 		SenhaDTO senha = senhaService.cadastrarSenha(false, gerente.getId());
 		Assert.assertEquals("N0001", senha.getNumero());
 		senhaService.zerarContador(gerente.getId());
