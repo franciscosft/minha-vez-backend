@@ -1,6 +1,7 @@
 package poc.minha.vez.senha;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -8,7 +9,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import poc.minha.vez.contador.ContadorService;
-import poc.minha.vez.senha.exceptions.OperacaoNegadaException;
+import poc.minha.vez.exceptions.OperacaoNegadaException;
+import poc.minha.vez.senha.exceptions.SenhaNaoEncontradaException;
 import poc.minha.vez.usuario.TipoUsuarioEnum;
 import poc.minha.vez.usuario.Usuario;
 import poc.minha.vez.usuario.UsuarioDTO;
@@ -79,6 +81,32 @@ public class SenhaService {
 
 	public List<Senha> buscarSenhasPorSituacao(SituacaoSenhaEnum situacao) {
 		return senhaDAO.findBySituacaoSenha(situacao);
+	}
+
+	public SenhaDTO puxarSenha(Integer idUsuario) throws OperacaoNegadaException, SenhaNaoEncontradaException {
+		Usuario recuperarUsuario = recuperarUsuario(idUsuario);
+		if(recuperarUsuario.getTipoUsuario() == TipoUsuarioEnum.GERENTE) {
+			Senha senha = senhaDAO.findBySituacaoSenhaOrderByIdAsc(SituacaoSenhaEnum.PENDENTE).get(0);
+			if(senha != null) {
+				senha.setSituacaoSenha(SituacaoSenhaEnum.ATENDENDO);
+				return toDTO(senhaDAO.save(senha));
+			} else {
+				throw new SenhaNaoEncontradaException();
+			}
+		} else {
+			throw new OperacaoNegadaException();
+		}
+		
+	}
+
+	public void concluirSenha(SenhaDTO puxarSenha, Integer idUsuario) throws SenhaNaoEncontradaException {
+		Usuario recuperarUsuario = recuperarUsuario(idUsuario);
+		if(recuperarUsuario.getTipoUsuario() == TipoUsuarioEnum.GERENTE) {
+			Optional<Senha> senha = senhaDAO.findById(puxarSenha.getId());
+			Senha orElseThrow = senha.orElseThrow(() -> new SenhaNaoEncontradaException());
+			orElseThrow.setSituacaoSenha(SituacaoSenhaEnum.CONCLUIDO);
+			senhaDAO.save(orElseThrow);
+		}
 	}
 
 }

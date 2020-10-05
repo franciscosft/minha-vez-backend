@@ -9,6 +9,9 @@ public interface SenhaDAO extends JpaRepository<Senha, Integer>   {
 
 	@Transactional(readOnly=true)
 	List<Senha> findBySituacaoSenha(SituacaoSenhaEnum situacao);
+
+	@Transactional(readOnly=true)
+	List<Senha> findBySituacaoSenhaOrderByIdAsc(SituacaoSenhaEnum situacao);
 	
 
 }

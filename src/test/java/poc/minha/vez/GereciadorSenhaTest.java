@@ -1,21 +1,21 @@
 package poc.minha.vez;
 
-import static org.junit.Assert.assertEquals;
-
 import java.util.List;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import poc.minha.vez.exceptions.OperacaoNegadaException;
 import poc.minha.vez.senha.Senha;
 import poc.minha.vez.senha.SenhaDTO;
 import poc.minha.vez.senha.SenhaService;
 import poc.minha.vez.senha.SituacaoSenhaEnum;
-import poc.minha.vez.senha.exceptions.OperacaoNegadaException;
+import poc.minha.vez.senha.exceptions.SenhaNaoEncontradaException;
 import poc.minha.vez.usuario.UsuarioDTO;
 import poc.minha.vez.usuario.UsuarioService;
 
@@ -28,6 +28,14 @@ public class GereciadorSenhaTest {
 	
 	@Autowired
 	private UsuarioService usuarioService;
+
+	private UsuarioDTO gerente;
+	
+	
+	@Before
+	public void beforeTest() {	
+		gerente = usuarioService.cadastrarGerente();
+	}
 	
 	/*
 	 * O banco dados em memória não possui nenhum registro, então obrigatoriamente a primeira senha será N0001
@@ -95,13 +103,21 @@ public class GereciadorSenhaTest {
 	
 	
 	@Test
-	public void testGerenciarSenhas() {
-		/*
-		 * TODO ao puxar uma senha mudar a situação de outra
-		 */
-		Assert.assertTrue(true);
+	public void testGerenciarSenhas() throws OperacaoNegadaException, SenhaNaoEncontradaException {
+		senhaService.zerarContador(gerente.getId());
+		
+		UsuarioDTO cliente = usuarioService.cadastrarCliente();
+		senhaService.cadastrarSenha(false, cliente.getId());
+		senhaService.cadastrarSenha(false, cliente.getId());
+
+		SenhaDTO puxarSenha = senhaService.puxarSenha(gerente.getId());
+		Assert.assertEquals("N0001", puxarSenha.getNumero());
+		Assert.assertEquals(SituacaoSenhaEnum.ATENDENDO, puxarSenha.getSituacaoSenha());
+		senhaService.concluirSenha(puxarSenha, gerente.getId());
+		
+		SenhaDTO puxarSenha2 = senhaService.puxarSenha(gerente.getId());
+		Assert.assertEquals("N0002", puxarSenha2.getNumero());
+		Assert.assertEquals(SituacaoSenhaEnum.ATENDENDO, puxarSenha2.getSituacaoSenha());
 	}
-	
-	
 	
 }
