@@ -12,7 +12,7 @@
 	
 	<groupId>poc</groupId>
 	<artifactId>poc.minha.vez</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>0.0.1-RC01</version>
 	<name>minha.vez</name>
 	<description>Gerenciador de senhas</description>
 
